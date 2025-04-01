@@ -1,5 +1,6 @@
 import json
 import sys
+import asyncio
 
 from openai_util import OpenAiUtil
 from pinecone_util import PineConeUtil
@@ -33,18 +34,24 @@ def process_news_url(news_url, title_css_class_name, content_css_class_name):
         print("Scrapped news content:")
         print(news_page_content)
 
-        # Analyze news via OpenAI completions API
-        open_ai_news_analysis = openai_util.analyze_news_data(news_page_content)
+        # Analyze news via OpenAI completions API (with chunking support)
+        open_ai_news_analysis = []
+        if openai_util.count_tokens(news_page_content) < openai_util.tokens_limit:
+            open_ai_news_analysis = openai_util.get_ai_completion_response(news_page_content)
+        else:
+            news_chunks = openai_util.split_data_into_chunks(news_page_content, openai_util.tokens_limit)
+            results = asyncio.run(parallel_openai_completions_calls(news_chunks))
+            open_ai_news_analysis = [item for sublist in results for item in sublist] # flatten list
+
         print("")
-        open_ai_news_analysis_json = json.loads(open_ai_news_analysis)['news_tags']
-        print("AI news analysis:", open_ai_news_analysis_json)
+        print("AI news analysis:", open_ai_news_analysis)
 
         # Store in vector DB (PineCone)
-        embedding_vectors = openai_util.generate_embedding(open_ai_news_analysis_json)
+        embedding_vectors = openai_util.generate_embedding(open_ai_news_analysis)
         vectors_metadata = {
             "news_title": news_page_title,
             "news_content": news_page_content,
-            "news_tags": open_ai_news_analysis_json
+            "news_tags": open_ai_news_analysis
         }
         pinecone_util.insert_new_vectors(embedding_vectors, vectors_metadata)
         print("")
@@ -53,6 +60,9 @@ def process_news_url(news_url, title_css_class_name, content_css_class_name):
         print("Exception occurred when processing news article, abort execution")
         exit(1)
 
+# Util method to make async calls to OpenAI completions API
+async def parallel_openai_completions_calls(news_chunks):
+    return await openai_util.run_parallel_openai_completions_calls(news_chunks)
 
 def query_news_from_db(query_text):
     """
