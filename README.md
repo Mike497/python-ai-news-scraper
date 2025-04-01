@@ -1,5 +1,5 @@
 # News Scraper App
-This project is aimed to create a simple application in Python to sniff news from given HTML URLs, then storing them into internal DB with ability to search over saved news later.
+This project is aimed to create a simple application in Python to sniff news from given HTML URLs, then processing via AI and then storing them into internal DB with ability to search over saved news later.
 
 ## Prerequisites
 1. Install Docker.
