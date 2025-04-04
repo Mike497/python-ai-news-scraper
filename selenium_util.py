@@ -20,12 +20,15 @@ class SeleniumUtil:
         self.driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
         self.find_by_class_query = "return document.getElementsByClassName(\"{}\")[{}];"
 
-    def find_text_in_url_by_class(self, url: str, title_class_name: str, content_class_name: str, index: int, timeout=10):
+    def find_text_in_url_by_class(self, url: str, title_class_name: str, content_class_name: str, index: int,
+                                  timeout=10):
         self.driver.get(url)
         WebDriverWait(self.driver, timeout).until(
             lambda d: self.driver.execute_script("return document.readyState") == "complete"
         )
-        return self.driver.execute_script(self.find_by_class_query.format(title_class_name, index)).text, self.driver.execute_script(self.find_by_class_query.format(content_class_name, index)).text
+        return self.driver.execute_script(
+            self.find_by_class_query.format(title_class_name, index)).text, self.driver.execute_script(
+            self.find_by_class_query.format(content_class_name, index)).text
 
     def __del__(self):
         if self.driver:

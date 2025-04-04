@@ -1,6 +1,7 @@
+import uuid
+
 from pinecone import ServerlessSpec, Pinecone
 
-import uuid
 
 class PineConeUtil:
 

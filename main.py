@@ -1,6 +1,5 @@
-import json
-import sys
 import asyncio
+import sys
 
 from openai_util import OpenAiUtil
 from pinecone_util import PineConeUtil
@@ -41,7 +40,7 @@ def process_news_url(news_url, title_css_class_name, content_css_class_name):
         else:
             news_chunks = openai_util.split_data_into_chunks(news_page_content, openai_util.tokens_limit)
             results = asyncio.run(parallel_openai_completions_calls(news_chunks))
-            open_ai_news_analysis = [item for sublist in results for item in sublist] # flatten list
+            open_ai_news_analysis = [item for sublist in results for item in sublist]  # flatten list
 
         print("")
         print("AI news analysis:", open_ai_news_analysis)
@@ -60,9 +59,11 @@ def process_news_url(news_url, title_css_class_name, content_css_class_name):
         print("Exception occurred when processing news article, abort execution")
         exit(1)
 
+
 # Util method to make async calls to OpenAI completions API
 async def parallel_openai_completions_calls(news_chunks):
     return await openai_util.run_parallel_openai_completions_calls(news_chunks)
+
 
 def query_news_from_db(query_text):
     """
